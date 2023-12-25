@@ -7,7 +7,7 @@ def process_video(file_path, frame_cut, start_point, resolution_label,total_fram
         video_capture = cv2.VideoCapture(file_path)
         total_frames = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))  # 總幀數
         
-        fps = int(video_capture.get(cv2.CAP_PROP_FPS))  # 幀率
+        fps = int(video_capture.get(cv2.CAP_PROP_FPS)) + 1  # 幀率
         
         width = int(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))#尺寸
         height = int(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))#尺寸
@@ -39,7 +39,7 @@ def process_video(file_path, frame_cut, start_point, resolution_label,total_fram
         num_images = 0
 
         while success:
-            if count >= start_point * fps and (count - start_point * fps) % frame_cut == 0:
+            if count >= start_point * fps and (count - start_point * fps) % (frame_cut * fps ) == 0:
                 image_file_name = os.path.join(output_folder, f"{num_images}.jpg")
                 cv2.imwrite(image_file_name, image)
                 num_images += 1

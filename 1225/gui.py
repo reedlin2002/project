@@ -26,11 +26,15 @@ def gui():
             completion_label.config(text="請選擇決定方式")
             return
         
+
         
-        start_point = int(start_point)
-        frame_cut = int(frame_cut)
         video_capture = cv2.VideoCapture(file_path)
+        fps = int(video_capture.get(cv2.CAP_PROP_FPS)) +1
         total_frame = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        start_point = int(start_point)
+        
+        frame_cut = int(frame_cut) * fps  #改成使用秒數判斷
+        
         
         if start_point >= total_frame:
             completion_label.config(text="起點超過總幀數.")
@@ -43,7 +47,6 @@ def gui():
         if start_point + frame_cut > total_frame:
             completion_label.config(text="每幀間隔超過總幀數.")
             return
-
         
         threading.Thread(target=process_video, args=(
             file_var.get(), int(entry.get()), int(start_point_entry.get()), resolution_label, total_frames_label, fps_label, completion_label, progress_bar
@@ -87,7 +90,7 @@ def gui():
             fps_label.config(text=f"幀率: {fps}")
                     
     root = tk.Tk()
-    root.title("影片拼接程式")
+    root.title("影格拼接程式")
     
     file_var = tk.StringVar()  # 檔案路徑
     # ===選擇影片===
@@ -107,18 +110,18 @@ def gui():
     
     # ===決定起點、幾幀切===
     #起點
-    label = tk.Label(root, text="起點 (seconds)：")
+    label = tk.Label(root, text="   起點 (seconds)")
     label.grid(row=2, column=1, padx=10, pady=10, sticky='w')
 
     start_point_entry = tk.Entry(root)
     start_point_entry.grid(row=2, column=1, padx=10, pady=10)
     
     #要用幾幀切
-    label = tk.Label(root, text="請輸入影格間距：")
-    label.grid(row=3, column=1, padx=(10, 5), pady=10, sticky='w')
+    label = tk.Label(root, text="影格間距 (seconds)：")
+    label.grid(row=3, column=1, padx=5, pady=10, sticky='w')
     
     entry = tk.Entry(root)
-    entry.grid(row=3, column=1,  padx=(5, 10), pady=10)
+    entry.grid(row=3, column=1, padx=10, pady=10)
     
     # ===顯示資訊的===
     info_button = tk.Button(root, text="獲取影片資訊", command=get_video_info)
