@@ -92,9 +92,9 @@ def gui():
     file_var = tk.StringVar()  # 檔案路徑
     # ===選擇影片===
     label = tk.Label(root, text="選擇影片：")
-    label.grid(row=0, column=0, padx=(10, 5), pady=10, sticky='e')
+    label.grid(row=0, column=0, padx=(10, 5), pady=10, sticky='w')
     
-    file_entry = tk.Entry(root, textvariable=file_var, state='readonly', width=35)
+    file_entry = tk.Entry(root, textvariable=file_var, state='readonly', width=50)
     file_entry.grid(row=0, column=1, padx=10, pady=10)
     
     #瀏覽button(找影片)
@@ -103,27 +103,26 @@ def gui():
     
     #播放選擇的影片(button)
     play_button = tk.Button(root, text="播放影片", command=play_video)
-    play_button.grid(row=1, column=0, padx=10, pady=10, sticky='e')
+    play_button.grid(row=1, column=1, padx=10, pady=10, sticky='w')
     
     # ===決定起點、幾幀切===
     #起點
     label = tk.Label(root, text="起點 (seconds)：")
-    label.grid(row=2, column=0, padx=(10, 5), pady=10, sticky='e')  # 調整 padx 來減小左邊的間距
+    label.grid(row=2, column=1, padx=10, pady=10, sticky='w')
 
     start_point_entry = tk.Entry(root)
-    start_point_entry.grid(row=2, column=1, padx=(5, 10), pady=10, sticky='w')  # 調整 padx 來減小右邊的間距
+    start_point_entry.grid(row=2, column=1, padx=10, pady=10)
     
     #要用幾幀切
-    label = tk.Label(root, text="請輸入影片切割的幀數間隔：")
-    label.grid(row=3, column=0, padx=(10, 5), pady=10, sticky='e')
+    label = tk.Label(root, text="請輸入影格間距：")
+    label.grid(row=3, column=1, padx=(10, 5), pady=10, sticky='w')
     
     entry = tk.Entry(root)
-    entry.grid(row=3, column=1,  padx=(5, 10), pady=10, sticky='w')
-    
+    entry.grid(row=3, column=1,  padx=(5, 10), pady=10)
     
     # ===顯示資訊的===
     info_button = tk.Button(root, text="獲取影片資訊", command=get_video_info)
-    info_button.grid(row=1, column=1, padx=10, pady=10, sticky='w')
+    info_button.grid(row=1, column=1, padx=10, pady=10)
     
     #總秒數
     total_frames_label = tk.Label(root, text="")
