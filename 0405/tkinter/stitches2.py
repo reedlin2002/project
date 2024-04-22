@@ -23,7 +23,7 @@ def stitch_images_in_folder(folder_path):# 獲取資料夾中所有的 .jpg 檔�
 def stitch(image):
     print('圖像拼接中...')
     # 圖像拼接
-    stitcher = cv2.Stitcher_create(cv2.Stitcher_SCANS)
+    stitcher = cv2.Stitcher_create()
     status, scans = stitcher.stitch(image)
     # 黑邊處理...
     if status == cv2.Stitcher_OK:
