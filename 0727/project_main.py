@@ -31,8 +31,8 @@ if __name__ == "__main__":
     # 加載模型預測器
     print('加載模型預測器...')
     predictor = setup_predictor(
-        config_path=r"C:\Users\JerryLin\Desktop\test\0721\beach_V_39_eSE_FPN_ms_3x.yaml",  # 模型配置文件路徑
-        weights_path=r"C:\Users\JerryLin\Desktop\test\0721\model_final.pth"  # 模型權重文件路徑
+        config_path=#your model,  # 模型配置文件路徑
+        weights_path=#your weights  # 模型權重文件路徑
     )
 
     # 對每張圖片進行預測
