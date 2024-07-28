@@ -87,22 +87,31 @@ def classify_and_save(image, predictor, output_image_path, output_json_path):
     )
 
     # 初始化類別信息
-    category_info = {class_name: {"count": 0, "instances": []} for class_name in class_names}
+    category_info = {class_name: {"count": 0, "instances": [], "total_area": 0, "max_area": None, "min_area": None} for class_name in class_names}
 
     # 記錄每個類別的實例信息
     for i in range(len(instances)):
         class_id = instances.pred_classes[i]
         class_name = class_names[class_id]
-        bbox = instances.pred_boxes[i].tensor.numpy()[0]
-        x, y, w, h = int(bbox[0]), int(bbox[1]), int(bbox[2] - bbox[0]), int(bbox[3] - bbox[1])
         mask = instances.pred_masks[i].numpy()
         area = int(np.sum(mask))
+        
         category_info[class_name]["count"] += 1
-        category_info[class_name]["instances"].append({"x": x, "y": y, "width": w, "height": h, "area": area})
+        category_info[class_name]["total_area"] += area
+        category_info[class_name]["instances"].append({"area": area})
+        
+        if (category_info[class_name]["max_area"] is None or area > category_info[class_name]["max_area"]):
+            category_info[class_name]["max_area"] = area
+        if (category_info[class_name]["min_area"] is None or area < category_info[class_name]["min_area"]):
+            category_info[class_name]["min_area"] = area
 
-    # 打印每個類別的數量
+    # 打印每個類別的數量和總面積
     for class_name, info in category_info.items():
-        print(f"{class_name}: 數量 = {info['count']}")
+        print(f"{class_name}: 數量 = {info['count']}, 總面積 = {info['total_area']}")
+        if info["count"] > 0:
+            print(f"{class_name}: 面積最大實例 = {info['max_area']}")
+            print(f"{class_name}: 面積最小實例 = {info['min_area']}")
+        print('=====================')
 
     # 顯示預測結果（可選）
     # cv2.imshow("Prediction", out.get_image()[:, :, ::-1])
@@ -117,4 +126,4 @@ def classify_and_save(image, predictor, output_image_path, output_json_path):
     with open(output_json_path, "w") as f:
         f.write(category_info_json)
 
-    print(f"垃圾類別已儲存到 {output_json_path}")
+    print(f"所有預測出的垃圾類別已儲存到 {output_json_path}")
