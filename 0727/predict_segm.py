@@ -5,6 +5,7 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from detectron2.data import MetadataCatalog
 from centermask.config import get_cfg
 import json
+import pandas as pd
 
 # 初始化模型配置和預測器
 def setup_predictor(config_path, weights_path, device="cuda"):
@@ -23,14 +24,16 @@ def setup_predictor(config_path, weights_path, device="cuda"):
     return DefaultPredictor(cfg)  # 返回配置好的預測器
 
 # 執行預測並保存結果
-def classify_and_save(image, predictor, output_image_path, output_json_path):
+def classify_and_save(image, predictor, output_image_path, output_json_path, image_index, excel_data):
     """
-    對圖像進行預測，並將結果保存到文件中。
+    對圖像進行預測，並將結果保存到文件中，同時更新 Excel 數據。
     
     :param image: 輸入圖像，NumPy 陣列格式
     :param predictor: 已配置的 DefaultPredictor 對象
     :param output_image_path: 輸出圖像的保存路徑
     :param output_json_path: 輸出 JSON 文件的保存路徑
+    :param image_index: 圖像的索引編號
+    :param excel_data: 用於生成 Excel 表格的數據字典
     """
     outputs = predictor(image)  # 使用預測器對圖像進行預測
     instances = outputs["instances"].to("cpu")  # 獲取預測實例並轉移到 CPU
@@ -52,7 +55,7 @@ def classify_and_save(image, predictor, output_image_path, output_json_path):
         'Styrofoam',
         'Pipe',
         'Bottle',
-        'Tire'
+        'Buoy'
     ]
 
     # 類別顏色（用於可視化）
@@ -68,7 +71,7 @@ def classify_and_save(image, predictor, output_image_path, output_json_path):
         'Styrofoam': (255/255, 0/255, 255/255),
         'Pipe': (255/255, 255/255, 255/255),
         'Bottle': (0/255, 0/255, 128/255),
-        'Tire': (0/255, 255/255, 128/255),
+        'Buoy': (0/255, 255/255, 128/255),
     }
 
     # 創建標籤文本
@@ -109,9 +112,18 @@ def classify_and_save(image, predictor, output_image_path, output_json_path):
     for class_name, info in category_info.items():
         print(f"{class_name}: 數量 = {info['count']}, 總面積 = {info['total_area']}")
         if info["count"] > 0:
-            print(f"{class_name}: 面積最大實例 = {info['max_area']}")
-            print(f"{class_name}: 面積最小實例 = {info['min_area']}")
+            print(f"{class_name}: 最大面積 = {info['max_area']}")
+            print(f"{class_name}: 最小面積 = {info['min_area']}")
         print('=====================')
+
+    # 更新 Excel 數據
+    for class_name, info in category_info.items():
+        excel_data["圖像編號"].append(image_index)
+        excel_data["類別"].append(class_name)
+        excel_data["數量"].append(info["count"])
+        excel_data["總面積"].append(info["total_area"])
+        excel_data["面積最大實例"].append(info["max_area"])
+        excel_data["面積最小實例"].append(info["min_area"])
 
     # 顯示預測結果（可選）
     # cv2.imshow("Prediction", out.get_image()[:, :, ::-1])
@@ -125,5 +137,63 @@ def classify_and_save(image, predictor, output_image_path, output_json_path):
     category_info_json = json.dumps(category_info, indent=4)
     with open(output_json_path, "w") as f:
         f.write(category_info_json)
-
+    
     print(f"所有預測出的垃圾類別已儲存到 {output_json_path}")
+    print('=====================')
+
+
+# 最終將所有數據保存到 Excel 表格
+def save_excel(excel_data, output_excel_path):
+    """
+    將所有類別數據保存到一個 Excel 文件中，並增加總結信息。
+    
+    :param excel_data: 匯總的 Excel 數據
+    :param output_excel_path: 輸出 Excel 文件的保存路徑
+    """
+    df = pd.DataFrame(excel_data)
+
+    # 計算總結信息
+    summary_data = {
+        "類別": [],
+        "數量": [],
+        "總面積": [],
+        "最大面積": [],
+        "最小面積": []
+    }
+
+    class_names = [
+        'Plastic bucket',
+        'Iron bucket',
+        'Plastic basket',
+        'Rope',
+        'Fishing Net',
+        'Float',
+        'Wood',
+        'Lifebuoy',
+        'Styrofoam',
+        'Pipe',
+        'Bottle',
+        'Buoy'
+    ]
+
+    for class_name in class_names:
+        class_df = df[df["類別"] == class_name]
+        count_sum = class_df["數量"].sum()
+        total_area_sum = class_df["總面積"].sum()
+        max_area = class_df["面積最大實例"].max() if not class_df["面積最大實例"].isnull().all() else None
+        min_area = class_df["面積最小實例"].min() if not class_df["面積最小實例"].isnull().all() else None
+
+        summary_data["類別"].append(class_name)
+        summary_data["數量"].append(count_sum)
+        summary_data["總面積"].append(total_area_sum)
+        summary_data["最大面積"].append(max_area)
+        summary_data["最小面積"].append(min_area)
+
+    summary_df = pd.DataFrame(summary_data)
+
+    # 將原始數據和總結信息寫入 Excel 文件
+    with pd.ExcelWriter(output_excel_path) as writer:
+        df.to_excel(writer, sheet_name="個別", index=False)
+        summary_df.to_excel(writer, sheet_name="Summary", index=False)
+
+    print(f"所有偵測出的類別已儲存到 Excel 表格 {output_excel_path}")

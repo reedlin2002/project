@@ -33,7 +33,7 @@ def stitch(images):
     print('圖像拼接中...')
     
     # 創建一個 Stitcher 物件，用於圖像拼接
-    stitcher = cv2.Stitcher_create()
+    stitcher = cv2.Stitcher_create(cv2.Stitcher_SCANS)
     
     # 使用 Stitcher 物件進行拼接
     status, stitched = stitcher.stitch(images)
