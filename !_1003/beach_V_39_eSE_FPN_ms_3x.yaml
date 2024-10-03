@@ -1,0 +1,9 @@
+_BASE_: "Base-beach-VoVNet.yaml"
+MODEL:
+  WEIGHTS: r"C:\Users\USER\Desktop\專研\0505\centermask2-master\vovnet39_ese_detectron2.pth"
+  VOVNET:
+    CONV_BODY : "V-39-eSE"
+SOLVER:
+  STEPS: (210000, 250000) # iter到210000, 250000時調整學習率
+  MAX_ITER: 270000 # 執行30000次 與作者的次數相同
+OUTPUT_DIR: "output/centermask/beach-V-39-ms-3x"
