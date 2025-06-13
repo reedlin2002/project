@@ -1,7 +1,7 @@
 import cv2
 import os
 
-def resize_images(images, scale_percent=50):
+def resize_images(images, scale_percent=100):
     """
     將圖像列表按指定的縮放百分比進行縮放。
     #影像拼接

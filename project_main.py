@@ -2,12 +2,15 @@ import os
 import cv2
 import numpy as np
 import json
-from gui import gui  # 匯入 GUI
-from predict_segm import setup_predictor, classify_and_save, save_excel  # 匯入模型預測器和分類儲存函數
-from stitching import stitch_images_in_folder  # 匯入圖像拼接函數
 import pandas as pd
 import tkinter as tk
 from tkinter import ttk
+
+from gui import gui  # 匯入 GUI
+from predict_segm import setup_predictor, classify_and_save, save_excel  # 匯入模型預測器和分類儲存函數
+from stitching import stitch_images_in_folder  # 匯入圖像拼接函數
+# 匯入 predict_withoutoverlap 模組
+from predict_withoutoverlap import process_images as process_images_without_overlap, setup_predictor as setup_predictor_without_overlap
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -22,7 +25,7 @@ def split_image(image, output_folder, base_filename, width=640, height=480):
     for y in range(0, h - height + 1, height):
         for x in range(0, w - width + 1, width):
             sub_image = image[y:y + height, x:x + width]
-            sub_image_path = os.path.join(output_folder, f"{base_filename}_{index}.bmp")
+            sub_image_path = os.path.join(output_folder, f"{base_filename}_{index}.jpg")
             cv2.imwrite(sub_image_path, sub_image)
             sub_images.append(sub_image_path)
             index += 1
@@ -188,26 +191,40 @@ def show_excel_data(excel_file):
 
 
 if __name__ == "__main__":
+    # 啟動 GUI，並等待使用者操作 GUI
     gui()
 
+    # 當 GUI 關閉或特定條件達成後，執行以下流程
     folder_path = "frames_output"
     temp_folder = "temp_output"
-    output_excel_path = "result.xlsx"
-    
+    withoutoverlap_folder = "withoutoverlap"
+    #output_excel_path = "result.xlsx"
+    output_excel_path = "output_data.xlsx"
+
+    # 第一步：加載模型並執行 predict_images_in_folder
     print('加載模型預測器...')
     predictor = setup_predictor(
-        config_path=r"C:\Users\JerryLin\Desktop\0911_pth\beach_V_39_eSE_FPN_ms_3x.yaml",
-        weights_path=r"C:\Users\JerryLin\Desktop\0911_pth\model_final.pth"
+        #config_path=r"檔案位置",
+        #weights_path=r"檔案位置"
+        config_path=r"檔案位置",
+        weights_path=r"檔案位置"
     )
-    
-    # 進行圖像拼接
+
+    # 執行圖像拼接和預測
     stitch_images_in_folder(folder_path)
     
     print('圖像辨識中...')
     predict_images_in_folder(folder_path, predictor, output_excel_path, temp_folder)
-    
-    # 進行圖像拼接
-    #stitch_images_in_folder(folder_path)
 
-    # 顯示 Excel 數據
+    # 確保 `predict_images_in_folder` 完成之後，再進行 withoutoverlap 處理
+    print('處理 重疊區域(withoutoverlap)的數量問題...')
+    predictor_without_overlap = setup_predictor_without_overlap(
+        config_path=r"檔案位置",
+        weights_path=r"檔案位置"
+    )
+    
+    # 第二步：處理 withoutoverlap 資料夾中的圖像
+    process_images_without_overlap(withoutoverlap_folder, output_excel_path, predictor_without_overlap)
+
+   # 顯示 Excel 數據
     show_excel_data(output_excel_path)

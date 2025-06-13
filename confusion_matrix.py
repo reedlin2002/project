@@ -4,19 +4,22 @@ import os
 from detectron2.engine import DefaultPredictor
 from centermask.config import get_cfg
 import json
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
+from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 
 # 加载模型
 cfg = get_cfg()
-cfg.merge_from_file(r"C:\Users\JerryLin\Desktop\0911_pth\beach_V_39_eSE_FPN_ms_3x.yaml")
-cfg.MODEL.WEIGHTS = r"C:\Users\JerryLin\Desktop\0911_pth\model_final.pth"
+cfg.merge_from_file(r"檔案位置")
+cfg.MODEL.WEIGHTS = r"檔案位置"
 cfg.MODEL.DEVICE = "cuda"
 predictor = DefaultPredictor(cfg)
 
 # 加载训练集的 JSON
-with open(r"C:\Users\JerryLin\Desktop\0911_pth\beach\annotations\beach_train.json") as f:
+with open(r"檔案位置") as f:
     val_data = json.load(f)
+
+# 构建 image_id 到 file_name 的映射表
+image_id_to_file = {image['id']: image['file_name'] for image in val_data['images']}
 
 # 预测结果与实际类别的存储
 y_true = []
@@ -34,12 +37,13 @@ category_id_to_label = {
     5: 'Buoy'
 }
 
+# 图像文件夹路径
+image_folder = r'檔案位置'
+
 # 处理每张图片
-for image_info in val_data['images']:
-    image_id = image_info['id']
-    image_filename = f"{image_id:06d}.bmp"
-    image_folder = r'C:\Users\JerryLin\Desktop\0911_pth\beach\train\beach_train'
-    image_path = os.path.join(image_folder, image_filename)
+for image_id, file_name in image_id_to_file.items():
+    # 获取正确的图像路径
+    image_path = os.path.join(image_folder, file_name)
     
     # 读取图片
     im = cv2.imread(image_path)
@@ -64,11 +68,6 @@ for image_info in val_data['images']:
     # 找到对应的标注数据
     true_classes = [ann['category_id'] for ann in val_data['annotations'] if ann['image_id'] == image_id]
     
-    # 打印真实标签和预测标签的数量
-    print(f"Image ID: {image_id}")
-    print(f"True Classes (Count: {len(true_classes)}): {true_classes}")
-    print(f"Pred Classes (Count: {len(pred_classes)}): {pred_classes}")
-    
     # 添加到真实标签和预测标签列表中
     y_true.extend(true_classes)
     
@@ -83,20 +82,36 @@ for image_info in val_data['images']:
     # 添加到预测标签列表中
     y_pred.extend(pred_classes)
 
-# 打印所有图片的真实标签和预测标签
-print(f"Length of y_true: {len(y_true)}")
-print(f"Length of y_pred: {len(y_pred)}")
-
-# 定义标签和名称
-labels = [1, 2, 3, 4, 5]  # 根据你的类别编号
-label_names = ['Float', 'Wood', 'Styrofoam', 'Bottle', 'Buoy']  # 根据你的类别名称
+# 计算混淆矩阵和分类报告
+labels = [1, 2, 3, 4, 5]
+label_names = ['Float', 'Wood', 'Styrofoam', 'Bottle', 'Buoy']
 
 # 计算混淆矩阵
 cm = confusion_matrix(y_true, y_pred, labels=labels)
 
+# 计算准确率
+accuracy = np.trace(cm) / np.sum(cm)
+print(f'Accuracy: {accuracy:.4f}')  # 打印准确率
+
 # 显示混淆矩阵
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
-disp.plot(cmap=plt.cm.Blues)
+fig, ax = plt.subplots(figsize=(8, 8))
+im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+
+# 添加标题和轴标签
+ax.set_title('Train Confusion Matrix')
+ax.set_xticks(np.arange(len(label_names)))
+ax.set_yticks(np.arange(len(label_names)))
+ax.set_xticklabels(label_names)
+ax.set_yticklabels(label_names)
+ax.set_xlabel('Predicted Labels')
+ax.set_ylabel('True Labels')
+
+# 显示数值
+for i in range(cm.shape[0]):
+    for j in range(cm.shape[1]):
+        ax.text(j, i, format(cm[i, j], 'd'), ha="center", va="center", color="black")
+
+plt.tight_layout()
 plt.show()
 
 # 计算并显示分类报告

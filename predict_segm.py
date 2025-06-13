@@ -36,12 +36,12 @@ def classify_and_save(image, predictor, output_image_path, output_json_path, ima
     class_names = ['Float', 'Wood', 'Styrofoam', 'Bottle', 'Buoy']
     # 類別顏色（用於可視化）
     class_colors = {
-         'Float': (255/255, 0/255, 128/255),
-         'Wood': (0/255, 0/255, 0/255),
-         'Styrofoam': (255/255, 0/255, 255/255),
-         'Bottle': (0/255, 0/255, 128/255),
-         'Buoy': (0/255, 255/255, 128/255),
-     }
+     'Float': (255/255, 0/255, 128/255),
+     'Wood':  (255/255, 128/255, 0/255),
+     'Styrofoam': (255/255, 255/255, 128/255),
+     'Bottle': (0/255, 0/255, 128/255),
+     'Buoy': (0/255, 255/255, 128/255),
+    }
 
      # 創建標籤文本
     labels = [
@@ -78,6 +78,7 @@ def classify_and_save(image, predictor, output_image_path, output_json_path, ima
     v = Visualizer(image[:, :, ::-1], metadata=MetadataCatalog.get(predictor.cfg.DATASETS.TEST[0]), instance_mode=ColorMode.SEGMENTATION)
     out = v.overlay_instances(
         labels=labels,
+        #boxes=instances.pred_boxes if instances.has("pred_boxes") else None,
         masks=instances.pred_masks,  
         assigned_colors=[class_colors[class_names[cls]] for cls in instances.pred_classes]
     )
