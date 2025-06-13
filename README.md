@@ -10,7 +10,7 @@ _基於 [CenterMask2](https://github.com/youngwanLEE/centermask2) 的海灘環�
 ---
 
 
-本專案所使用之 CenterMask2 原始碼與模型，版權屬於 Electronics and Telecommunications Research Institute (ETRI)，並依據 Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0) 授權釋出。
+本專案所使用之 CenterMask2 原始碼與模型，版權屬於 Electronics and Telecommunications Research Institute (ETRI)，本人僅將其用於學習與研究目的。
 
 本專案為學術研究及學習用途，嚴格遵守非商業使用規定，未用於任何商業活動。
 
