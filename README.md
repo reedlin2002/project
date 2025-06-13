@@ -1,4 +1,4 @@
-# 澎湖海灘垃圾自動監測系統  
+# 監測系統  
 _基於 [CenterMask2](https://github.com/youngwanLEE/centermask2) 的海灘環境實例分割應用_
 
 本專案為大學研究專題，旨在開發沿海環境保護的新途徑，實現海灘垃圾的自動監測與量化分析。
